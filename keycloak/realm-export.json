@@ -1,0 +1,70 @@
+{
+  "realm": "statusforge",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "clients": [
+    {
+      "clientId": "statusforge-backend",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "change-me",
+      "bearerOnly": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": true
+    },
+    {
+      "clientId": "statusforge-frontend",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "rootUrl": "http://localhost:3000"
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "ADMIN", "description": "Full access" },
+      { "name": "OPERATOR", "description": "Manage services and incidents" },
+      { "name": "VIEWER", "description": "Read-only access" }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@statusforge.local",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "admin", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "operator",
+      "email": "operator@statusforge.local",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "operator", "temporary": false }],
+      "realmRoles": ["OPERATOR"]
+    },
+    {
+      "username": "viewer",
+      "email": "viewer@statusforge.local",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "viewer", "temporary": false }],
+      "realmRoles": ["VIEWER"]
+    }
+  ]
+}
