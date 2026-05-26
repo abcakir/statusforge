@@ -31,7 +31,20 @@
       "directAccessGrantsEnabled": false,
       "redirectUris": ["http://localhost:3000/*"],
       "webOrigins": ["http://localhost:3000"],
-      "rootUrl": "http://localhost:3000"
+      "rootUrl": "http://localhost:3000",
+      "protocolMappers": [
+        {
+          "name": "audience-statusforge-backend",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "statusforge-backend",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "roles": {
@@ -45,24 +58,33 @@
     {
       "username": "admin",
       "email": "admin@statusforge.local",
+      "firstName": "Admin",
+      "lastName": "User",
       "enabled": true,
       "emailVerified": true,
+      "requiredActions": [],
       "credentials": [{ "type": "password", "value": "admin", "temporary": false }],
       "realmRoles": ["ADMIN"]
     },
     {
       "username": "operator",
       "email": "operator@statusforge.local",
+      "firstName": "Operator",
+      "lastName": "User",
       "enabled": true,
       "emailVerified": true,
+      "requiredActions": [],
       "credentials": [{ "type": "password", "value": "operator", "temporary": false }],
       "realmRoles": ["OPERATOR"]
     },
     {
       "username": "viewer",
       "email": "viewer@statusforge.local",
+      "firstName": "Viewer",
+      "lastName": "User",
       "enabled": true,
       "emailVerified": true,
+      "requiredActions": [],
       "credentials": [{ "type": "password", "value": "viewer", "temporary": false }],
       "realmRoles": ["VIEWER"]
     }

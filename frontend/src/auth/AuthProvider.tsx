@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import keycloak from "./keycloak";
 
 interface AuthContextValue {
@@ -12,8 +12,12 @@ const AuthContext = createContext<AuthContextValue>({ ready: false, authenticate
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const initCalled = useRef(false);
 
   useEffect(() => {
+    if (initCalled.current) return;
+    initCalled.current = true;
+
     keycloak
       .init({ onLoad: "login-required", checkLoginIframe: false })
       .then((auth) => { setAuthenticated(auth); setReady(true); })
