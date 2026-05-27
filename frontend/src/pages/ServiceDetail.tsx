@@ -17,7 +17,7 @@ export default function ServiceDetail() {
   const qc = useQueryClient();
   const lastMessage = useRealtimeStore((s) => s.lastMessage);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ name: "", url: "", description: "", check_interval: "60", timeout: "10" });
+  const [form, setForm] = useState({ name: "", url: "", description: "", check_interval: "60", timeout: "10", is_active: true });
 
   const { data: service } = useService(id!);
   const { data: latency = [] } = useQuery({ queryKey: ["latency", id], queryFn: () => getLatencySeries(id!), enabled: !!id });
@@ -42,6 +42,7 @@ export default function ServiceDetail() {
         description: service.description ?? "",
         check_interval: String(service.check_interval),
         timeout: String(service.timeout),
+        is_active: service.is_active,
       });
     }
   }, [service, editing]);
@@ -56,6 +57,7 @@ export default function ServiceDetail() {
         description: form.description || null,
         check_interval: Number(form.check_interval) || 60,
         timeout: Number(form.timeout) || 10,
+        is_active: form.is_active,
       },
     });
     setEditing(false);
@@ -104,6 +106,15 @@ export default function ServiceDetail() {
             <input type="number" className="w-full border rounded px-3 py-2 text-sm" placeholder="Check interval (s)" value={form.check_interval} onChange={set("check_interval")} min={10} />
             <input type="number" className="w-full border rounded px-3 py-2 text-sm" placeholder="Timeout (s)" value={form.timeout} onChange={set("timeout")} min={1} />
           </div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <div
+              onClick={() => setForm((f) => ({ ...f, is_active: !f.is_active }))}
+              className={`relative w-10 h-6 rounded-full transition-colors ${form.is_active ? "bg-blue-600" : "bg-gray-300"}`}
+            >
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_active ? "translate-x-5" : "translate-x-1"}`} />
+            </div>
+            <span className="text-sm text-gray-700">Active (monitoring enabled)</span>
+          </label>
           <div className="flex gap-3">
             <button type="submit" disabled={update.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50">
               {update.isPending ? "Saving…" : "Save"}

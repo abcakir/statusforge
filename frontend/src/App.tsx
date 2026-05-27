@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import { AuthProvider } from "./auth/AuthProvider";
+import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import NotificationBell from "./components/NotificationBell";
 import Dashboard from "./pages/Dashboard";
 import Incidents from "./pages/Incidents";
@@ -11,6 +11,7 @@ import Settings from "./pages/Settings";
 const qc = new QueryClient();
 
 function Navbar() {
+  const { logout } = useAuth();
   return (
     <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-6">
@@ -26,7 +27,12 @@ function Navbar() {
           </Link>
         ))}
       </div>
-      <NotificationBell />
+      <div className="flex items-center gap-3">
+        <NotificationBell />
+        <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-800 px-3 py-1 border border-gray-200 rounded-md hover:bg-gray-50">
+          Logout
+        </button>
+      </div>
     </nav>
   );
 }
