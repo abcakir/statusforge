@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { getOverview } from "../api/metrics";
 import IncidentCard from "../components/IncidentCard";
 import ServiceCard from "../components/ServiceCard";
 import { useIncidents } from "../hooks/useIncidents";
 import { useServices } from "../hooks/useServices";
 import { useWebSocket } from "../hooks/useWebSocket";
+import { useRealtimeStore } from "../stores/realtimeStore";
 
 const statCards = [
   { key: "total_services", label: "Total Services", bg: "bg-gray-50" },
@@ -16,6 +18,19 @@ const statCards = [
 
 export default function Dashboard() {
   useWebSocket();
+  const qc = useQueryClient();
+  const lastMessage = useRealtimeStore((s) => s.lastMessage);
+
+  useEffect(() => {
+    if (lastMessage?.type === "service_update") {
+      qc.invalidateQueries({ queryKey: ["services"] });
+      qc.invalidateQueries({ queryKey: ["overview"] });
+    }
+    if (lastMessage?.type === "incident_created" || lastMessage?.type === "incident_updated") {
+      qc.invalidateQueries({ queryKey: ["incidents"] });
+      qc.invalidateQueries({ queryKey: ["overview"] });
+    }
+  }, [lastMessage, qc]);
 
   const { data: overview } = useQuery({ queryKey: ["overview"], queryFn: getOverview });
   const { data: services = [] } = useServices();

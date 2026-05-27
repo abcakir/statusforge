@@ -77,5 +77,5 @@ async def check_now(
     _=Depends(require_role(Role.ADMIN, Role.OPERATOR)),
 ):
     from app.tasks.health_check import check_service
-    check_service.delay(str(service_id))
+    check_service.delay(str(service_id), force=True)
     return {"message": "Check triggered"}

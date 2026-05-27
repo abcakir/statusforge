@@ -1,4 +1,5 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { checkNow } from "../api/services";
 import { getLatencySeries, getUptime } from "../api/metrics";
@@ -6,10 +7,22 @@ import LatencyChart from "../components/LatencyChart";
 import StatusBadge from "../components/StatusBadge";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { useService } from "../hooks/useServices";
+import { useRealtimeStore } from "../stores/realtimeStore";
 
 export default function ServiceDetail() {
   const { id } = useParams<{ id: string }>();
   useWebSocket(id);
+
+  const qc = useQueryClient();
+  const lastMessage = useRealtimeStore((s) => s.lastMessage);
+
+  useEffect(() => {
+    if (lastMessage?.type === "service_update" && lastMessage.service_id === id) {
+      qc.invalidateQueries({ queryKey: ["services", id] });
+      qc.invalidateQueries({ queryKey: ["latency", id] });
+      qc.invalidateQueries({ queryKey: ["uptime", id] });
+    }
+  }, [lastMessage, id, qc]);
 
   const { data: service } = useService(id!);
   const { data: latency = [] } = useQuery({ queryKey: ["latency", id], queryFn: () => getLatencySeries(id!), enabled: !!id });

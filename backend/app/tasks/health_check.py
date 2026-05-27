@@ -40,11 +40,11 @@ async def _async_run_all_checks():
 
 
 @celery_app.task(name="app.tasks.health_check.check_service")
-def check_service(service_id: str):
-    _run(_async_check_service(uuid.UUID(service_id)))
+def check_service(service_id: str, force: bool = False):
+    _run(_async_check_service(uuid.UUID(service_id), force=force))
 
 
-async def _async_check_service(service_id: uuid.UUID):
+async def _async_check_service(service_id: uuid.UUID, force: bool = False):
     from sqlalchemy import select
 
     from app.core.database import async_session_factory
@@ -67,8 +67,8 @@ async def _async_check_service(service_id: uuid.UUID):
         if not svc:
             return
 
-        # Respect per-service check interval
-        if svc.last_checked_at:
+        # Respect per-service check interval (skipped when force=True)
+        if not force and svc.last_checked_at:
             elapsed = (datetime.utcnow() - svc.last_checked_at.replace(tzinfo=None)).total_seconds()
             if elapsed < svc.check_interval - 5:
                 return
