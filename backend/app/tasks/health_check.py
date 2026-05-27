@@ -84,6 +84,7 @@ async def _async_check_service(service_id: uuid.UUID, force: bool = False):
 
         prev_status = svc.status
         incident_created = None
+        incident_resolved = None
 
         if probe["status"] == "DOWN":
             svc.consecutive_failures += 1
@@ -103,7 +104,7 @@ async def _async_check_service(service_id: uuid.UUID, force: bool = False):
             if prev_status == ServiceStatus.DOWN:
                 open_inc = await get_open_incident_for_service(db, service_id)
                 if open_inc:
-                    await resolve_incident(db, open_inc.id)
+                    incident_resolved = await resolve_incident(db, open_inc.id)
 
         svc.last_checked_at = datetime.utcnow()
         await db.commit()
@@ -126,4 +127,11 @@ async def _async_check_service(service_id: uuid.UUID, force: bool = False):
             "service_id": str(service_id),
             "severity": incident_created.severity,
             "title": incident_created.title,
+        }))
+
+    if incident_resolved:
+        await redis.publish("ws:global", json.dumps({
+            "type": "incident_updated",
+            "incident_id": str(incident_resolved.id),
+            "status": "RESOLVED",
         }))
