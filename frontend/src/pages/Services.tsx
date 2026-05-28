@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useAuth } from "../auth/AuthProvider";
 import ServiceCard from "../components/ServiceCard";
 import { useCreateService, useServices } from "../hooks/useServices";
 
 const empty = { name: "", url: "", description: "", check_interval: "60" };
 
 export default function Services() {
+  const { user } = useAuth();
+  const canCreate = user?.role === "ADMIN" || user?.role === "OPERATOR";
   const { data: services = [] } = useServices();
   const create = useCreateService();
   const [showForm, setShowForm] = useState(false);
@@ -24,9 +27,11 @@ export default function Services() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Services</h1>
-        <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
-          Add Service
-        </button>
+        {canCreate && (
+          <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
+            Add Service
+          </button>
+        )}
       </div>
 
       {showForm && (

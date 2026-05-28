@@ -1,7 +1,11 @@
+import { Link } from "react-router-dom";
+import { useAuth } from "../auth/AuthProvider";
 import StatusBadge from "../components/StatusBadge";
 import { useAcknowledgeIncident, useIncidents, useResolveIncident } from "../hooks/useIncidents";
 
 export default function Incidents() {
+  const { user } = useAuth();
+  const canAct = user?.role === "ADMIN" || user?.role === "OPERATOR";
   const { data: incidents = [] } = useIncidents();
   const acknowledge = useAcknowledgeIncident();
   const resolve = useResolveIncident();
@@ -15,7 +19,7 @@ export default function Incidents() {
           <div key={incident.id} className="bg-white rounded-lg shadow p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="font-semibold text-gray-900">{incident.title}</h3>
+                <Link to={`/incidents/${incident.id}`} className="font-semibold text-gray-900 hover:text-blue-600">{incident.title}</Link>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-gray-500 font-medium">{incident.severity}</span>
                   <StatusBadge status={incident.status} />
@@ -25,7 +29,7 @@ export default function Incidents() {
                   <p className="text-sm text-gray-500">Resolved: {new Date(incident.resolved_at).toLocaleString()}</p>
                 )}
               </div>
-              {incident.status !== "RESOLVED" && (
+              {canAct && incident.status !== "RESOLVED" && (
                 <div className="flex gap-2 shrink-0">
                   {incident.status === "OPEN" && (
                     <button onClick={() => acknowledge.mutate(incident.id)} className="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">

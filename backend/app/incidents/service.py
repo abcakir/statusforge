@@ -66,6 +66,15 @@ async def resolve_incident(db: AsyncSession, incident_id: uuid.UUID, user_id: uu
     return incident
 
 
+async def get_incident_events(db: AsyncSession, incident_id: uuid.UUID) -> list[IncidentEvent]:
+    result = await db.execute(
+        select(IncidentEvent)
+        .where(IncidentEvent.incident_id == incident_id)
+        .order_by(IncidentEvent.created_at)
+    )
+    return list(result.scalars().all())
+
+
 async def add_comment(db: AsyncSession, incident_id: uuid.UUID, user_id: uuid.UUID, message: str) -> IncidentEvent:
     event = IncidentEvent(
         incident_id=incident_id, user_id=user_id, event_type=IncidentEventType.COMMENT, message=message

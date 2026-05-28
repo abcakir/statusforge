@@ -27,6 +27,13 @@ async def get_incident(
     return incident
 
 
+@router.get("/{incident_id}/events", response_model=list[IncidentEventRead])
+async def get_events(
+    incident_id: uuid.UUID, db: AsyncSession = Depends(get_db), _=Depends(get_current_user)
+):
+    return await inc_service.get_incident_events(db, incident_id)
+
+
 @router.post("/{incident_id}/acknowledge", response_model=IncidentRead)
 async def acknowledge(
     incident_id: uuid.UUID,

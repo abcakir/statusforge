@@ -29,6 +29,17 @@ export interface Incident {
   created_at: string;
 }
 
+export type IncidentEventType = "CREATED" | "ACKNOWLEDGED" | "RESOLVED" | "COMMENT";
+
+export interface IncidentEvent {
+  id: string;
+  incident_id: string;
+  user_id: string | null;
+  event_type: IncidentEventType;
+  message: string | null;
+  created_at: string;
+}
+
 export interface Notification {
   id: string;
   user_id: string;

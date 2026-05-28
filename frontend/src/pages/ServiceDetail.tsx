@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { checkNow } from "../api/services";
 import { getLatencySeries, getUptime } from "../api/metrics";
+import { useAuth } from "../auth/AuthProvider";
 import LatencyChart from "../components/LatencyChart";
 import StatusBadge from "../components/StatusBadge";
 import { useWebSocket } from "../hooks/useWebSocket";
@@ -12,6 +13,9 @@ import { useRealtimeStore } from "../stores/realtimeStore";
 export default function ServiceDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canEdit = user?.role === "ADMIN" || user?.role === "OPERATOR";
+  const canDelete = user?.role === "ADMIN";
   useWebSocket(id);
 
   const qc = useQueryClient();
@@ -77,22 +81,28 @@ export default function ServiceDetail() {
         </div>
         <div className="flex items-center gap-3">
           <StatusBadge status={service.status} />
-          <button onClick={() => check.mutate()} disabled={check.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50">
-            {check.isPending ? "Queued" : "Check Now"}
-          </button>
-          <button onClick={() => setEditing((e) => !e)} className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
-            {editing ? "Cancel" : "Edit"}
-          </button>
-          <button
-            onClick={() => {
-              if (confirm(`Service "${service.name}" wirklich löschen?`)) {
-                remove.mutate(id!, { onSuccess: () => navigate("/services") });
-              }
-            }}
-            className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
-          >
-            Delete
-          </button>
+          {canEdit && (
+            <button onClick={() => check.mutate()} disabled={check.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50">
+              {check.isPending ? "Queued" : "Check Now"}
+            </button>
+          )}
+          {canEdit && (
+            <button onClick={() => setEditing((e) => !e)} className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+              {editing ? "Cancel" : "Edit"}
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => {
+                if (confirm(`Service "${service.name}" wirklich löschen?`)) {
+                  remove.mutate(id!, { onSuccess: () => navigate("/services") });
+                }
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
 
