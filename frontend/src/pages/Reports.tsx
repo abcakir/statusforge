@@ -11,7 +11,7 @@ const DAYS_OPTIONS = [
 
 function uptimeColor(pct: number | null): string {
   if (pct === null) return "text-gray-400";
-  if (pct >= 99.9) return "text-green-600";
+  if (pct >= 99) return "text-green-600";
   if (pct >= 95) return "text-yellow-600";
   return "text-red-600";
 }

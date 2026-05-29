@@ -163,7 +163,12 @@ export default function ServiceDetail() {
       {uptime && (
         <div className="bg-white rounded-lg shadow p-5">
           <h2 className="font-semibold text-gray-800 mb-1">30-day Uptime</h2>
-          <p className="text-3xl font-bold text-green-600">{uptime.uptime_percent !== null ? `${uptime.uptime_percent}%` : "N/A"}</p>
+          <p className={`text-3xl font-bold ${
+            uptime.uptime_percent === null ? "text-gray-400" :
+            uptime.uptime_percent >= 99 ? "text-green-600" :
+            uptime.uptime_percent >= 95 ? "text-yellow-500" :
+            "text-red-600"
+          }`}>{uptime.uptime_percent !== null ? `${uptime.uptime_percent}%` : "N/A"}</p>
           <p className="text-xs text-gray-500 mt-1">{uptime.total_checks} total checks</p>
         </div>
       )}
