@@ -16,5 +16,12 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "INFO"
 
+    smtp_host: str = "mailhog"
+    smtp_port: int = 1025
+    smtp_from: str = "statusforge@localhost"
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_use_tls: bool = False
+
 
 settings = Settings()

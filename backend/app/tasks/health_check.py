@@ -57,8 +57,10 @@ async def _async_check_service(service_id: uuid.UUID, force: bool = False):
     )
     from app.monitoring.models import HealthCheck
     from app.monitoring.probe import probe_http
+    from app.notifications.email import send_incident_email
     from app.notifications.models import NotificationSeverity
     from app.notifications.service import create_notifications_for_incident
+    from app.users.models import User
     from app.services.models import MonitoredService, ServiceStatus
 
     async with async_session_factory() as db:
@@ -85,6 +87,8 @@ async def _async_check_service(service_id: uuid.UUID, force: bool = False):
         prev_status = svc.status
         incident_created = None
         incident_resolved = None
+        incident_emails: tuple | None = None
+        resolved_emails: tuple | None = None
 
         if probe["status"] == "DOWN":
             svc.consecutive_failures += 1
@@ -94,7 +98,12 @@ async def _async_check_service(service_id: uuid.UUID, force: bool = False):
                 if not open_inc:
                     incident = await create_incident(db, service_id, f"{svc.name} is DOWN", IncidentSeverity.CRITICAL)
                     await create_notifications_for_incident(db, incident.id, f"{svc.name} is DOWN", NotificationSeverity.CRITICAL)
+                    email_result = await db.execute(
+                        select(User).where(User.role.in_(["ADMIN", "OPERATOR"]), User.is_active == True)
+                    )
+                    emails = [u.email for u in email_result.scalars().all() if u.email]
                     incident_created = incident
+                    incident_emails = (emails, svc.name, "DOWN", incident.title)
         elif probe["status"] == "DEGRADED":
             svc.consecutive_failures = 0
             svc.status = ServiceStatus.DEGRADED
@@ -105,6 +114,11 @@ async def _async_check_service(service_id: uuid.UUID, force: bool = False):
                 open_inc = await get_open_incident_for_service(db, service_id)
                 if open_inc:
                     incident_resolved = await resolve_incident(db, open_inc.id)
+                    email_result = await db.execute(
+                        select(User).where(User.role.in_(["ADMIN", "OPERATOR"]), User.is_active == True)
+                    )
+                    emails = [u.email for u in email_result.scalars().all() if u.email]
+                    resolved_emails = (emails, svc.name, "UP", f"{svc.name} is back UP")
 
         svc.last_checked_at = datetime.utcnow()
         await db.commit()
@@ -135,3 +149,8 @@ async def _async_check_service(service_id: uuid.UUID, force: bool = False):
             "incident_id": str(incident_resolved.id),
             "status": "RESOLVED",
         }))
+
+    if incident_emails:
+        await send_incident_email(*incident_emails)
+    if resolved_emails:
+        await send_incident_email(*resolved_emails)

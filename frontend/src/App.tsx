@@ -8,6 +8,7 @@ import Incidents from "./pages/Incidents";
 import ServiceDetail from "./pages/ServiceDetail";
 import Services from "./pages/Services";
 import Settings from "./pages/Settings";
+import StatusPage from "./pages/StatusPage";
 
 const qc = new QueryClient();
 
@@ -44,26 +45,35 @@ function Navbar() {
   );
 }
 
+function AuthenticatedApp() {
+  return (
+    <AuthProvider>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="max-w-7xl mx-auto px-4 py-6">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/services/:id" element={<ServiceDetail />} />
+            <Route path="/incidents" element={<Incidents />} />
+            <Route path="/incidents/:id" element={<IncidentDetail />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </div>
+    </AuthProvider>
+  );
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={qc}>
-      <AuthProvider>
-        <BrowserRouter>
-          <div className="min-h-screen bg-gray-50">
-            <Navbar />
-            <main className="max-w-7xl mx-auto px-4 py-6">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/services/:id" element={<ServiceDetail />} />
-                <Route path="/incidents" element={<Incidents />} />
-                <Route path="/incidents/:id" element={<IncidentDetail />} />
-                <Route path="/settings" element={<Settings />} />
-              </Routes>
-            </main>
-          </div>
-        </BrowserRouter>
-      </AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/status" element={<StatusPage />} />
+          <Route path="*" element={<AuthenticatedApp />} />
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

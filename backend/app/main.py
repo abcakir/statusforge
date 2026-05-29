@@ -9,6 +9,7 @@ from app.incidents.router import router as incidents_router
 from app.metrics.router import router as metrics_router
 from app.notifications.router import router as notifications_router
 from app.services.router import router as services_router
+from app.status.router import router as status_router
 from app.users.router import router as users_router
 from app.websocket.router import router as ws_router
 
@@ -32,6 +33,7 @@ app.include_router(services_router, prefix=PREFIX)
 app.include_router(incidents_router, prefix=PREFIX)
 app.include_router(notifications_router, prefix=PREFIX)
 app.include_router(metrics_router, prefix=PREFIX)
+app.include_router(status_router, prefix=PREFIX)
 app.include_router(ws_router)
 
 

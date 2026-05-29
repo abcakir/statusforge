@@ -81,3 +81,23 @@ export interface WSMessage {
   type: "service_update" | "incident_created" | "incident_updated" | "notification";
   [key: string]: unknown;
 }
+
+export interface ServiceStatusItem {
+  name: string;
+  status: ServiceStatus;
+  last_checked_at: string | null;
+}
+
+export interface ActiveIncidentItem {
+  title: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  started_at: string;
+}
+
+export interface SystemStatus {
+  overall: "operational" | "partial_outage" | "major_outage";
+  services: ServiceStatusItem[];
+  active_incidents: ActiveIncidentItem[];
+  checked_at: string;
+}
