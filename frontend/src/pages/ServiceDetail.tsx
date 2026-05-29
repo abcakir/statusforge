@@ -21,7 +21,7 @@ export default function ServiceDetail() {
   const qc = useQueryClient();
   const lastMessage = useRealtimeStore((s) => s.lastMessage);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ name: "", url: "", description: "", check_interval: "60", timeout: "10", is_active: true });
+  const [form, setForm] = useState({ name: "", url: "", description: "", check_interval: "60", timeout: "10", is_active: true, failure_threshold: "2", latency_threshold_ms: "2000", incident_severity: "CRITICAL" });
 
   const { data: service } = useService(id!);
   const { data: latency = [] } = useQuery({ queryKey: ["latency", id], queryFn: () => getLatencySeries(id!), enabled: !!id });
@@ -47,6 +47,9 @@ export default function ServiceDetail() {
         check_interval: String(service.check_interval),
         timeout: String(service.timeout),
         is_active: service.is_active,
+        failure_threshold: String(service.failure_threshold),
+        latency_threshold_ms: String(service.latency_threshold_ms),
+        incident_severity: service.incident_severity,
       });
     }
   }, [service, editing]);
@@ -62,12 +65,15 @@ export default function ServiceDetail() {
         check_interval: Number(form.check_interval) || 60,
         timeout: Number(form.timeout) || 10,
         is_active: form.is_active,
+        failure_threshold: Number(form.failure_threshold) || 2,
+        latency_threshold_ms: Number(form.latency_threshold_ms) || 2000,
+        incident_severity: form.incident_severity,
       },
     });
     setEditing(false);
   };
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   if (!service) return <div className="text-gray-500">Loading…</div>;
@@ -125,6 +131,26 @@ export default function ServiceDetail() {
             </div>
             <span className="text-sm text-gray-700">Active (monitoring enabled)</span>
           </label>
+
+          <div className="border-t pt-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Alert Rules</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Failures until DOWN</label>
+                <input type="number" className="w-full border rounded px-3 py-2 text-sm" value={form.failure_threshold} onChange={set("failure_threshold")} min={1} max={10} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Latency threshold (ms)</label>
+                <input type="number" className="w-full border rounded px-3 py-2 text-sm" value={form.latency_threshold_ms} onChange={set("latency_threshold_ms")} min={100} />
+              </div>
+            </div>
+            <div className="mt-3">
+              <label className="text-xs text-gray-500 mb-1 block">Incident severity</label>
+              <select className="w-full border rounded px-3 py-2 text-sm" value={form.incident_severity} onChange={set("incident_severity")}>
+                {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map((s) => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
           <div className="flex gap-3">
             <button type="submit" disabled={update.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50">
               {update.isPending ? "Saving…" : "Save"}
@@ -152,7 +178,43 @@ export default function ServiceDetail() {
         <p><span className="font-medium">Timeout:</span> {service.timeout}s</p>
         <p><span className="font-medium">Active:</span> {service.is_active ? "Yes" : "No"}</p>
         <p><span className="font-medium">Consecutive failures:</span> {service.consecutive_failures}</p>
+        <p><span className="font-medium">Failure threshold:</span> {service.failure_threshold}</p>
+        <p><span className="font-medium">Latency threshold:</span> {service.latency_threshold_ms} ms</p>
+        <p><span className="font-medium">Incident severity:</span> {service.incident_severity}</p>
       </div>
+
+      {service.url.startsWith("https://") && (
+        <div className={`rounded-lg shadow p-5 text-sm ${
+          service.ssl_days_remaining === null ? "bg-white text-gray-500" :
+          service.ssl_days_remaining <= 7 ? "bg-red-50 border border-red-200" :
+          service.ssl_days_remaining <= 30 ? "bg-yellow-50 border border-yellow-200" :
+          "bg-green-50 border border-green-200"
+        }`}>
+          <h2 className="font-semibold text-gray-800 mb-2">SSL Certificate</h2>
+          {service.ssl_expires_at === null ? (
+            <p className="text-gray-400">Not checked yet — will run within the next hour.</p>
+          ) : service.ssl_days_remaining !== null && service.ssl_days_remaining <= 0 ? (
+            <p className="text-red-700 font-semibold">Certificate has expired!</p>
+          ) : (
+            <div className="space-y-0.5">
+              <p>
+                <span className="font-medium">Expires:</span>{" "}
+                {new Date(service.ssl_expires_at!).toLocaleDateString()}
+              </p>
+              <p>
+                <span className="font-medium">Days remaining:</span>{" "}
+                <span className={
+                  service.ssl_days_remaining! <= 7 ? "text-red-600 font-semibold" :
+                  service.ssl_days_remaining! <= 30 ? "text-yellow-600 font-semibold" :
+                  "text-green-700 font-semibold"
+                }>
+                  {service.ssl_days_remaining} days
+                </span>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -25,9 +25,20 @@ async def get_open_incident_for_service(db: AsyncSession, service_id: uuid.UUID)
         select(Incident).where(
             Incident.service_id == service_id,
             Incident.status != IncidentStatus.RESOLVED,
-        )
+        ).order_by(desc(Incident.created_at))
     )
-    return result.scalar_one_or_none()
+    return result.scalars().first()
+
+
+async def get_open_ssl_incident_for_service(db: AsyncSession, service_id: uuid.UUID) -> Incident | None:
+    result = await db.execute(
+        select(Incident).where(
+            Incident.service_id == service_id,
+            Incident.status != IncidentStatus.RESOLVED,
+            Incident.title.like("SSL%"),
+        ).order_by(desc(Incident.created_at))
+    )
+    return result.scalars().first()
 
 
 async def create_incident(

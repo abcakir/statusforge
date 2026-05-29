@@ -16,6 +16,23 @@ export interface Service {
   consecutive_failures: number;
   last_checked_at: string | null;
   created_at: string;
+  failure_threshold: number;
+  latency_threshold_ms: number;
+  incident_severity: IncidentSeverity;
+  ssl_expires_at: string | null;
+  ssl_checked_at: string | null;
+  ssl_days_remaining: number | null;
+}
+
+export interface ServiceSLAReport {
+  service_id: string;
+  service_name: string;
+  url: string;
+  uptime_percent: number | null;
+  avg_latency_ms: number | null;
+  total_checks: number;
+  incident_count: number;
+  total_downtime_minutes: number;
 }
 
 export interface Incident {

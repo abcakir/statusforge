@@ -35,3 +35,12 @@ class MonitoredService(Base):
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
+
+    # Alert rule thresholds
+    failure_threshold: Mapped[int] = mapped_column(Integer, default=2)
+    latency_threshold_ms: Mapped[int] = mapped_column(Integer, default=2000)
+    incident_severity: Mapped[str] = mapped_column(String(20), default="CRITICAL")
+
+    # SSL certificate info
+    ssl_expires_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
+    ssl_checked_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))

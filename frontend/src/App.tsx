@@ -5,6 +5,7 @@ import NotificationBell from "./components/NotificationBell";
 import Dashboard from "./pages/Dashboard";
 import IncidentDetail from "./pages/IncidentDetail";
 import Incidents from "./pages/Incidents";
+import Reports from "./pages/Reports";
 import ServiceDetail from "./pages/ServiceDetail";
 import Services from "./pages/Services";
 import Settings from "./pages/Settings";
@@ -24,6 +25,7 @@ function Navbar() {
           { to: "/", label: "Dashboard" },
           { to: "/services", label: "Services" },
           { to: "/incidents", label: "Incidents" },
+          { to: "/reports", label: "Reports" },
         ].map(({ to, label }) => (
           <Link key={to} to={to} className="text-sm text-gray-600 hover:text-gray-900">
             {label}
@@ -57,6 +59,7 @@ function AuthenticatedApp() {
             <Route path="/services/:id" element={<ServiceDetail />} />
             <Route path="/incidents" element={<Incidents />} />
             <Route path="/incidents/:id" element={<IncidentDetail />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>

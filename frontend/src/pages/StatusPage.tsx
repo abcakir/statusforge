@@ -64,7 +64,7 @@ export default function StatusPage() {
           <span className={`w-4 h-4 rounded-full ${cfg.color} shrink-0`} />
           <span className={`text-lg font-semibold ${cfg.text}`}>{cfg.label}</span>
           <span className="ml-auto text-xs text-gray-400">
-            Updated {new Date(status.checked_at).toLocaleTimeString()}
+            Updated {new Date(status.checked_at + "Z").toLocaleTimeString()}
           </span>
         </div>
 
