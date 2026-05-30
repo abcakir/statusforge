@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth.router import router as auth_router
+from app.prometheus.router import router as prometheus_router
 from app.core.config import settings
 from app.incidents.router import router as incidents_router
 from app.metrics.router import router as metrics_router
@@ -37,6 +38,7 @@ app.include_router(metrics_router, prefix=PREFIX)
 app.include_router(reports_router, prefix=PREFIX)
 app.include_router(status_router, prefix=PREFIX)
 app.include_router(ws_router)
+app.include_router(prometheus_router)
 
 
 @app.get("/health")
